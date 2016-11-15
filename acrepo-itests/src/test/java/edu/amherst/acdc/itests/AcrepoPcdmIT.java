@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package edu.amherst.acdc.itests;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -37,6 +38,7 @@ import java.util.Set;
 
 import org.apache.camel.CamelContext;
 import org.apache.jena.rdf.model.Model;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ops4j.pax.exam.Configuration;
@@ -58,6 +60,7 @@ public class AcrepoPcdmIT extends AbstractOSGiIT {
 
     private static Logger LOGGER = getLogger(AcrepoPcdmIT.class);
 
+    @Override
     @Configuration
     public Option[] config() {
         final ConfigurationManager cm = new ConfigurationManager();
@@ -70,17 +73,17 @@ public class AcrepoPcdmIT extends AbstractOSGiIT {
 
         return new Option[] {
             karafDistributionConfiguration()
-                .frameworkUrl(maven().groupId("org.apache.karaf").artifactId("apache-karaf")
-                        .version(cm.getProperty("karaf.version")).type("zip"))
-                .unpackDirectory(new File("build", "exam"))
-                .useDeployFolder(false),
+                    .frameworkUrl(maven().groupId("org.apache.karaf").artifactId("apache-karaf")
+                            .version(cm.getProperty("karaf.version")).type("zip"))
+                    .unpackDirectory(new File("build", "exam"))
+                    .useDeployFolder(false),
             logLevel(LogLevel.INFO),
             keepRuntimeFolder(),
             configureConsole().ignoreLocalConsole(),
             features(maven().groupId("org.apache.karaf.features").artifactId("standard")
-                        .versionAsInProject().classifier("features").type("xml"), "scr"),
+                    .versionAsInProject().classifier("features").type("xml"), "scr"),
             features(maven().groupId("edu.amherst.acdc").artifactId("acrepo-karaf")
-                        .type("xml").classifier("features").versionAsInProject(),
+                    .type("xml").classifier("features").versionAsInProject(),
                     "acrepo-exts-pcdm"),
 
             systemProperty("karaf.pcdm.port").value(pcdmExtPort),
@@ -91,7 +94,7 @@ public class AcrepoPcdmIT extends AbstractOSGiIT {
             editConfigurationFilePut("etc/org.apache.karaf.shell.cfg", "sshPort", sshPort),
             editConfigurationFilePut("etc/edu.amherst.acdc.exts.pcdm.cfg", "fcrepo.baseUrl", fcrepoBaseUrl),
             editConfigurationFilePut("etc/edu.amherst.acdc.exts.pcdm.cfg", "rest.port", pcdmExtPort)
-       };
+        };
     }
 
     @Test
@@ -116,6 +119,7 @@ public class AcrepoPcdmIT extends AbstractOSGiIT {
     }
 
     @Test
+    @Ignore
     public void testPcdmObjectTurtle() throws Exception {
         // make sure that the camel context has started up.
         final CamelContext ctx = getOsgiService(CamelContext.class, "(camel.context.name=AcrepoExtPcdm)",
@@ -150,6 +154,7 @@ public class AcrepoPcdmIT extends AbstractOSGiIT {
     }
 
     @Test
+    @Ignore
     public void testPcdmObjectJsonLD() throws Exception {
         // make sure that the camel context has started up.
         final CamelContext ctx = getOsgiService(CamelContext.class, "(camel.context.name=AcrepoExtPcdm)",

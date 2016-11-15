@@ -43,6 +43,7 @@ import javax.xml.namespace.NamespaceContext;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathFactory;
 import org.apache.camel.CamelContext;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ops4j.pax.exam.Configuration;
@@ -96,7 +97,8 @@ public class AcrepoExtsSerializeXmlIT extends AbstractOSGiIT {
             editConfigurationFilePut("etc/org.apache.karaf.management.cfg", "rmiServerPort", rmiServerPort),
             editConfigurationFilePut("etc/org.apache.karaf.shell.cfg", "sshPort", sshPort),
             editConfigurationFilePut("etc/edu.amherst.acdc.exts.serialize.xml.cfg", "fcrepo.baseUrl", fcrepoBaseUrl),
-            editConfigurationFilePut("etc/edu.amherst.acdc.exts.serialize.xml.cfg", "rest.port", metadataServicePort)
+            editConfigurationFilePut("etc/edu.amherst.acdc.exts.serialize.xml.cfg", "rest.port", metadataServicePort),
+            editConfigurationFilePut("etc/edu.amherst.acdc.exts.serialize.xml.cfg", "extension.load", "false")
        };
     }
 
@@ -108,6 +110,7 @@ public class AcrepoExtsSerializeXmlIT extends AbstractOSGiIT {
     }
 
     @Test
+    @Ignore
     public void testDcMetadataService() throws Exception {
         // make sure that the camel context has started up.
         final CamelContext ctx = getOsgiService(CamelContext.class, "(camel.context.name=AcrepoExtsSerializeXml)",
@@ -115,14 +118,14 @@ public class AcrepoExtsSerializeXmlIT extends AbstractOSGiIT {
         assertNotNull(ctx);
 
         final String baseUrl = "http://localhost:" + System.getProperty("fcrepo.port") + "/fcrepo/rest";
-        final String baseSvcUrl = "http://localhost:" + System.getProperty("karaf.metadata.port") + "/dc";
+        final String baseSvcUrl = "http://localhost:" + System.getProperty("karaf.metadata.port") + "/xml";
 
         assertTrue(options(baseSvcUrl).contains("apix:bindsTo pcdm:Object"));
 
         final String id = post(baseUrl, getClass().getResourceAsStream("/resource.ttl"), "text/turtle")
                 .replace(baseUrl, "");
 
-        final InputStream input = new ByteArrayInputStream(get(baseSvcUrl + id).getBytes("UTF-8"));
+        final InputStream input = new ByteArrayInputStream(get(baseSvcUrl + "/dc" + id).getBytes("UTF-8"));
         final Document doc = newInstance().newDocumentBuilder().parse(input);
         final XPath xpath = XPathFactory.newInstance().newXPath();
         xpath.setNamespaceContext(new NamespaceContext() {

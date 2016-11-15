@@ -23,6 +23,7 @@ import static org.fcrepo.camel.FcrepoHeaders.FCREPO_IDENTIFIER;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_BASE_URL;
 
 import org.apache.camel.builder.RouteBuilder;
+import org.slf4j.Logger;
 
 /**
  * A content router for handling JMS events.
@@ -30,6 +31,8 @@ import org.apache.camel.builder.RouteBuilder;
  * @author Aaron Coburn
  */
 public class EventRouter extends RouteBuilder {
+
+    Logger LOG = org.slf4j.LoggerFactory.getLogger(RouteBuilder.class);
 
     /**
      * Configure the message route workflow.
@@ -42,12 +45,18 @@ public class EventRouter extends RouteBuilder {
           .choice()
             .when(header(HTTP_METHOD).isEqualTo("GET"))
               .log("JSONLD Processing ${headers[CamelHttpPath]}")
-              .setHeader(FCREPO_IDENTIFIER).header(HTTP_PATH)
+              .process(e -> e.getIn().setHeader(FCREPO_IDENTIFIER,
+                      e.getIn().getHeader("Apix-Ldp-Resource-Path",
+                              e.getIn().getHeader(HTTP_PATH))))
               .to("direct:get")
             .when(header(HTTP_METHOD).isEqualTo("OPTIONS"))
               .setHeader(CONTENT_TYPE).constant("text/turtle")
               .setHeader("Allow").constant("GET,OPTIONS")
-              .to("language:simple:resource:classpath:options.ttl");
+              .choice()
+                .when(header("apix.scope").isEqualTo("resource"))
+                  .to("language:simple:resource:classpath:options_resource.ttl")
+                .otherwise()
+                  .to("language:simple:resource:classpath:options.ttl");
 
         from("direct:get")
           .routeId("JsonLdGet")
