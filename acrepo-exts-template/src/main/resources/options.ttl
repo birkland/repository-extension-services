@@ -4,9 +4,9 @@
 @prefix registry: <http://acdc.amherst.edu/extensions#> .
 @prefix apix: <urn:apix#> .
 
-<#Extension> a apix:Extension ;
+<> a apix:Extension ;
     rdfs:label "Fedora Template Service" ;
     rdfs:comment "A service that transforms RDFSource documents to HTML via a pluggable template" ;
     apix:exposesService registry:TemplateService ;
-    apix:exposesServiceAtURI "svc:template" ;
+    apix:exposesServiceAt "svc:template" ;
     apix:bindsTo fedora:Resource .

@@ -24,7 +24,6 @@ import static org.apache.camel.Exchange.HTTP_URI;
 import static org.apache.camel.LoggingLevel.INFO;
 import static org.apache.camel.builder.PredicateBuilder.and;
 import static org.apache.camel.component.exec.ExecBinding.EXEC_COMMAND_ARGS;
-import static org.fcrepo.camel.FcrepoHeaders.FCREPO_IDENTIFIER;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.InputStream;
@@ -56,12 +55,10 @@ public class EventRouter extends RouteBuilder {
         from("jetty:http://{{rest.host}}:{{rest.port}}{{rest.prefix}}?" +
               "matchOnUriPrefix=true&sendServerVersion=false&httpMethodRestrict=GET,OPTIONS")
           .routeId("ImageRouter")
-          .setHeader(FCREPO_IDENTIFIER).header(HTTP_PATH)
           .setHeader(IMAGE_OUTPUT).header(HTTP_ACCEPT)
           .removeHeaders(HTTP_ACCEPT)
           .choice()
             .when(header(HTTP_METHOD).isEqualTo("GET"))
-              .setHeader(FCREPO_IDENTIFIER).header(HTTP_PATH)
               .to("direct:get")
             .when(header(HTTP_METHOD).isEqualTo("OPTIONS"))
               .setHeader(CONTENT_TYPE).constant("text/turtle")
@@ -70,6 +67,7 @@ public class EventRouter extends RouteBuilder {
 
         from("direct:get")
           .routeId("ImageGet")
+          .setHeader(HTTP_PATH, header("Apix-Ldp-Resource-Path"))
           .setHeader(HTTP_METHOD).constant("HEAD")
           .setHeader(HTTP_URI).simple("http://{{fcrepo.baseUrl}}")
           .to("http4://{{fcrepo.baseUrl}}?authUsername={{fcrepo.authUsername}}" +
@@ -102,7 +100,7 @@ public class EventRouter extends RouteBuilder {
         from("direct:convert")
           .routeId("ImageConvert")
           .setHeader(HTTP_METHOD).constant("GET")
-          .setHeader(HTTP_PATH).header(FCREPO_IDENTIFIER)
+          .setHeader(HTTP_PATH).header("Apix-Ldp-Resource-Path")
           .to("http4://{{fcrepo.baseUrl}}?authUsername={{fcrepo.authUsername}}" +
               "&authPassword={{fcrepo.authPassword}}&throwExceptionOnFailure=true")
           .setHeader(IMAGE_INPUT).header(CONTENT_TYPE)
