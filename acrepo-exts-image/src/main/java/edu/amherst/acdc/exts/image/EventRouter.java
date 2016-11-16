@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package edu.amherst.acdc.exts.image;
 
 import static java.util.Arrays.stream;
@@ -27,7 +28,10 @@ import static org.apache.camel.component.exec.ExecBinding.EXEC_COMMAND_ARGS;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.InputStream;
+import java.util.Collection;
+import java.util.HashSet;
 
+import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
 import org.slf4j.Logger;
@@ -39,17 +43,22 @@ import org.slf4j.Logger;
  */
 public class EventRouter extends RouteBuilder {
 
-    private final String IMAGE_OUTPUT = "CamelImageOutput";
-    private final String IMAGE_INPUT = "CamelImageInput";
-    private final String HTTP_ACCEPT = "Accept";
-    private final String DEFAULT_OUTPUT_FORMAT = "jpeg";
-    private final String HTTP_QUERY_OPTIONS = "options";
+    private static final String IMAGE_OUTPUT = "CamelImageOutput";
+
+    private static final String IMAGE_INPUT = "CamelImageInput";
+
+    private static final String HTTP_ACCEPT = "Accept";
+
+    private static final String DEFAULT_OUTPUT_FORMAT = "jpeg";
+
+    private static final String HTTP_QUERY_OPTIONS = "options";
 
     private static final Logger LOGGER = getLogger(EventRouter.class);
 
     /**
      * Configure the message route workflow.
      */
+    @Override
     public void configure() throws Exception {
 
         from("jetty:http://{{rest.host}}:{{rest.port}}{{rest.prefix}}?" +
@@ -118,7 +127,7 @@ public class EventRouter extends RouteBuilder {
               if (valid) {
                   exchange.getIn().setHeader(IMAGE_OUTPUT, "image/" + fmt);
                   exchange.getIn().setHeader(EXEC_COMMAND_ARGS,
-                      " - " + exchange.getIn().getHeader(HTTP_QUERY_OPTIONS, "", String.class) + " " + fmt + ":-");
+                      " - " + cmdOptions(exchange) + " " + fmt + ":-");
               } else {
                   throw new RuntimeCamelException("Invalid format: " + fmt);
               }
@@ -129,5 +138,18 @@ public class EventRouter extends RouteBuilder {
           .process(exchange -> {
               exchange.getOut().setBody(exchange.getIn().getBody(InputStream.class));
           });
+    }
+
+    // Hack - cmdline options are often an array of repeated elements.  Fix that
+    @SuppressWarnings("unchecked")
+    static final String cmdOptions(final Exchange e) {
+        final Object optHdr = e.getIn().getHeader(HTTP_QUERY_OPTIONS);
+
+        if (optHdr instanceof Collection) {
+            return String.join(" ",  new HashSet<>((Collection<String>) optHdr));
+        } else if (optHdr != null) {
+            return (String) optHdr;
+        }
+        return "";
     }
 }
