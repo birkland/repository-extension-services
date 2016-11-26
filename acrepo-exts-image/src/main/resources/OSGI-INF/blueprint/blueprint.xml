@@ -21,7 +21,6 @@
        <cm:property name="extension.load" value="true" />
        <cm:property name="extension.load.uri" value="http://apix/services//apix:load" />
        <cm:property name="extension.load.maximumRediveries" value="60" />
-       <cm:property name="useInterceptURIs" value="true" />
      </cm:default-properties>
    </cm:property-placeholder>
 
