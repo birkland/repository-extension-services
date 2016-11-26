@@ -2,7 +2,7 @@
 @prefix rdfs:<http://www.w3.org/2000/01/rdf-schema#> .
 @prefix fedora: <http://fedora.info/definitions/v4/repository#> .
 @prefix registry: <http://acdc.amherst.edu/extensions#> .
-@prefix apix: <urn:apix#> .
+@prefix apix:<http://fedora.info/definitions/v4/api-extension#> .
 
 <> a apix:Extension ;
     rdfs:label "Fedora Template Service" ;
