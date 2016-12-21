@@ -15,7 +15,6 @@
        <cm:property name="rest.host" value="localhost"/>
        <cm:property name="jsonld.context" value="https://acdc.amherst.edu/jsonld/models.json"/>
        <cm:property name="fcrepo.baseUrl" value="http://localhost:8080/fcrepo/rest"/>
-       <cm:property name="apix.loader.uri" value="http://apix/services//apix:load" />
      </cm:default-properties>
    </cm:property-placeholder>
 

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package edu.amherst.acdc.exts.image;
 
 import static java.util.Arrays.stream;
@@ -25,6 +24,7 @@ import static org.apache.camel.Exchange.HTTP_URI;
 import static org.apache.camel.LoggingLevel.INFO;
 import static org.apache.camel.builder.PredicateBuilder.and;
 import static org.apache.camel.component.exec.ExecBinding.EXEC_COMMAND_ARGS;
+import static org.fcrepo.camel.FcrepoHeaders.FCREPO_IDENTIFIER;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.InputStream;
@@ -44,13 +44,9 @@ import org.slf4j.Logger;
 public class EventRouter extends RouteBuilder {
 
     private static final String IMAGE_OUTPUT = "CamelImageOutput";
-
     private static final String IMAGE_INPUT = "CamelImageInput";
-
     private static final String HTTP_ACCEPT = "Accept";
-
     private static final String DEFAULT_OUTPUT_FORMAT = "jpeg";
-
     private static final String HTTP_QUERY_OPTIONS = "options";
 
     private static final Logger LOGGER = getLogger(EventRouter.class);
@@ -58,12 +54,14 @@ public class EventRouter extends RouteBuilder {
     /**
      * Configure the message route workflow.
      */
-    @Override
     public void configure() throws Exception {
 
         from("jetty:http://{{rest.host}}:{{rest.port}}{{rest.prefix}}?" +
               "matchOnUriPrefix=true&sendServerVersion=false&httpMethodRestrict=GET,OPTIONS")
           .routeId("ImageRouter")
+          .process(e -> e.getIn().setHeader(FCREPO_IDENTIFIER,
+                  e.getIn().getHeader("Apix-Ldp-Resource-Path",
+                          e.getIn().getHeader(HTTP_PATH))))
           .setHeader(IMAGE_OUTPUT).header(HTTP_ACCEPT)
           .removeHeaders(HTTP_ACCEPT)
           .choice()
@@ -76,7 +74,7 @@ public class EventRouter extends RouteBuilder {
 
         from("direct:get")
           .routeId("ImageGet")
-          .setHeader(HTTP_PATH, header("Apix-Ldp-Resource-Path"))
+          .setHeader(HTTP_PATH, header(FCREPO_IDENTIFIER))
           .setHeader(HTTP_METHOD).constant("HEAD")
           .setHeader(HTTP_URI).simple("http://{{fcrepo.baseUrl}}")
           .to("http4://{{fcrepo.baseUrl}}?authUsername={{fcrepo.authUsername}}" +
@@ -109,7 +107,7 @@ public class EventRouter extends RouteBuilder {
         from("direct:convert")
           .routeId("ImageConvert")
           .setHeader(HTTP_METHOD).constant("GET")
-          .setHeader(HTTP_PATH).header("Apix-Ldp-Resource-Path")
+          .setHeader(HTTP_PATH).header(FCREPO_IDENTIFIER)
           .to("http4://{{fcrepo.baseUrl}}?authUsername={{fcrepo.authUsername}}" +
               "&authPassword={{fcrepo.authPassword}}&throwExceptionOnFailure=true")
           .setHeader(IMAGE_INPUT).header(CONTENT_TYPE)

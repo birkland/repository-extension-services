@@ -23,7 +23,6 @@ import static org.fcrepo.camel.FcrepoHeaders.FCREPO_IDENTIFIER;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_BASE_URL;
 
 import org.apache.camel.builder.RouteBuilder;
-import org.slf4j.Logger;
 
 /**
  * A content router for handling JMS events.
@@ -31,8 +30,6 @@ import org.slf4j.Logger;
  * @author Aaron Coburn
  */
 public class EventRouter extends RouteBuilder {
-
-    Logger LOG = org.slf4j.LoggerFactory.getLogger(RouteBuilder.class);
 
     /**
      * Configure the message route workflow.

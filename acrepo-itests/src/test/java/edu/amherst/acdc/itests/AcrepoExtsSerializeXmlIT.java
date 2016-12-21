@@ -39,7 +39,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.apache.camel.CamelContext;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ops4j.pax.exam.Configuration;
@@ -108,7 +107,6 @@ public class AcrepoExtsSerializeXmlIT extends AbstractOSGiIT {
     }
 
     @Test
-    @Ignore
     public void testDcMetadataService() throws Exception {
         // make sure that the camel context has started up.
         final CamelContext ctx = getOsgiService(CamelContext.class, "(camel.context.name=AcrepoExtsSerializeXml)",
@@ -118,7 +116,7 @@ public class AcrepoExtsSerializeXmlIT extends AbstractOSGiIT {
         final String baseUrl = "http://localhost:" + System.getProperty("fcrepo.port") + "/fcrepo/rest";
         final String baseSvcUrl = "http://localhost:" + System.getProperty("karaf.metadata.port") + "/xml";
 
-        assertTrue(options(baseSvcUrl).contains("apix:bindsTo pcdm:Object"));
+        assertTrue(options(baseSvcUrl).contains("apix:bindsTo fedora:Resource"));
 
         final String id = post(baseUrl, getClass().getResourceAsStream("/resource.ttl"), "text/turtle")
                 .replace(baseUrl, "");

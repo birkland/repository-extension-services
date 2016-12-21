@@ -48,10 +48,10 @@ public class EventRouter extends RouteBuilder {
             .routeId("TemplateTransformation")
             .choice()
                 .when(header(HTTP_METHOD).isEqualTo("GET"))
-                    .log("PATH: ${headers[Apix-Ldp-Resource-Path]}")
                     .process(e -> e.getIn().setHeader(FCREPO_IDENTIFIER,
                             e.getIn().getHeader("Apix-Ldp-Resource-Path",
                                     e.getIn().getHeader(HTTP_PATH))))
+                    .log("PATH: ${headers[CamelFcrepoIdentifier]}")
                     .removeHeader("breadcrumbId")
                     .removeHeader("Accept")
                     .removeHeader("User-Agent")

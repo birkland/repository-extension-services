@@ -83,7 +83,9 @@ public class EventRouter extends RouteBuilder {
             .removeHeader("breadcrumbId")
             .removeHeader("Accept")
             .removeHeader("User-Agent")
-            .setHeader(FCREPO_IDENTIFIER).header("Apix-Ldp-Resource-Path")
+            .process(e -> e.getIn().setHeader(FCREPO_IDENTIFIER,
+                    e.getIn().getHeader("Apix-Ldp-Resource-Path",
+                            e.getIn().getHeader(HTTP_PATH, "", String.class).replaceFirst("^/.+?/", "/"))))
             .setHeader(FCREPO_BASE_URL).simple("{{fcrepo.baseUrl}}")
             .to("fcrepo:{{fcrepo.baseUrl}}?throwExceptionOnFailure=false");
 

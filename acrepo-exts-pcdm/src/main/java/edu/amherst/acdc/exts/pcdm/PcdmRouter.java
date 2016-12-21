@@ -18,6 +18,7 @@ package edu.amherst.acdc.exts.pcdm;
 import static java.util.Optional.ofNullable;
 import static org.apache.camel.Exchange.CONTENT_TYPE;
 import static org.apache.camel.Exchange.HTTP_METHOD;
+import static org.apache.camel.Exchange.HTTP_PATH;
 import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_IDENTIFIER;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_BASE_URL;
@@ -50,7 +51,6 @@ public class PcdmRouter extends RouteBuilder {
           .removeHeader("User-Agent")
           .choice()
             .when(header(HTTP_METHOD).isEqualTo("GET"))
-              .log("Building PCDM Object ${headers[Apix-Ldp-Resource-Path]}")
               .to("direct:get")
             .when(header(HTTP_METHOD).isEqualTo("OPTIONS"))
               .setHeader(CONTENT_TYPE).constant("text/turtle")
@@ -60,7 +60,10 @@ public class PcdmRouter extends RouteBuilder {
         from("direct:get")
           .routeId("PcdmGet")
           .setHeader(PCDM_ACCEPT, header("Accept"))
-          .setBody(header("Apix-Ldp-Resource-Path"))
+          .process(e -> e.getIn().setBody(
+                  e.getIn().getHeader("Apix-Ldp-Resource-Path",
+                          e.getIn().getHeader(HTTP_PATH))))
+          .log("Building PCDM Object ${body}")
           .setHeader(FCREPO_BASE_URL).simple("{{fcrepo.baseUrl}}")
           .to("seda:recurse")
           .removeHeader("breadcrumbId")
