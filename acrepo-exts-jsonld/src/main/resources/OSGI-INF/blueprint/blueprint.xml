@@ -15,7 +15,9 @@
        <cm:property name="rest.host" value="localhost"/>
        <cm:property name="jsonld.context" value="https://acdc.amherst.edu/jsonld/models.json"/>
        <cm:property name="fcrepo.baseUrl" value="localhost:8080/fcrepo/rest"/>
-       <cm:property name="apix.loader.uri" value="http://apix/services//apix:load" />
+       <cm:property name="extension.load" value="true" />
+       <cm:property name="extension.load.uri" value="http://apix/services//apix:load" />
+       <cm:property name="extension.load.maximumRedeliveries" value="120" />
      </cm:default-properties>
    </cm:property-placeholder>
 
@@ -32,6 +34,31 @@
       <setBody>
         <method ref="jsonldService" method="compact(${body}, ${header[JsonLdContext]})"/>
       </setBody>
+    </route>
+
+    <route id="load-extension">
+      <from uri="timer:register?repeatCount=1" />
+      <onException>
+        <exception>java.lang.Exception</exception>
+        <redeliveryPolicy maximumRedeliveries="{{extension.load.maximumRediveries}}"
+                          logRetryAttempted="true" retryAttemptedLogLevel="INFO" redeliveryDelay="10000"
+                          useExponentialBackOff="true" backOffMultiplier="2"/>
+      </onException>
+      <setHeader headerName="Content-Type">
+        <constant>text/plain</constant>
+      </setHeader>
+      <setHeader headerName="CamelHttpMethod">
+        <constant>POST</constant>
+      </setHeader>
+      <setBody>
+        <simple>http://{{rest.host}}:{{rest.port}}{{rest.prefix}}</simple>
+      </setBody>
+      <choice>
+        <when>
+          <simple>{{extension.load}}</simple>
+          <to uri="jetty:{{extension.load.uri}}?okStatusCodeRange=200-399" />
+        </when>
+      </choice>
     </route>
 
   </camelContext>
