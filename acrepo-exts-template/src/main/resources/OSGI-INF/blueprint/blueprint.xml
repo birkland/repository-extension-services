@@ -20,7 +20,7 @@
        <cm:property name="jsonld.context" value="https://acdc.amherst.edu/jsonld/models.json"/>
        <cm:property name="extension.load" value="true" />
        <cm:property name="extension.load.uri" value="http://apix/services//apix:load" />
-       <cm:property name="extension.load.maximumRediveries" value="60" />
+       <cm:property name="extension.load.maximumRediveries" value="120" />
      </cm:default-properties>
    </cm:property-placeholder>
 

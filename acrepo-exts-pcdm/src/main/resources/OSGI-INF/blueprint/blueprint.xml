@@ -17,7 +17,7 @@
        <cm:property name="fcrepo.baseUrl" value="http://localhost:8080/fcrepo/rest"/>
        <cm:property name="extension.load" value="true" />
        <cm:property name="extension.load.uri" value="http://apix/services//apix:load" />
-       <cm:property name="extension.load.maximumRediveries" value="60" />
+       <cm:property name="extension.load.maximumRedeliveries" value="120" />
      </cm:default-properties>
    </cm:property-placeholder>
 
@@ -60,14 +60,15 @@
         <method ref="pcdmService" method="serialize(${header[CamelPcdmModel]}, ${header[CamelPcdmAccept]})"/>
       </setBody>
     </route>
-    
+
     <!-- Self-register the loader service as an extension -->
     <route id="load-extension">
       <from uri="timer:register?repeatCount=1" />
       <onException>
         <exception>java.lang.Exception</exception>
         <redeliveryPolicy maximumRedeliveries="{{extension.load.maximumRediveries}}"
-          logRetryAttempted="true" retryAttemptedLogLevel="INFO" />
+                          logRetryAttempted="true" retryAttemptedLogLevel="INFO" redeliveryDelay="10000"
+                          useExponentialBackOff="true" backOffMultiplier="2"/>
       </onException>
       <setHeader headerName="Content-Type">
         <constant>text/plain</constant>
@@ -82,7 +83,7 @@
         <when>
           <simple>{{extension.load}}</simple>
           <to
-            uri="jetty:{{extension.load.uri}}?okStatusCodeRange=200-399" />
+                  uri="jetty:{{extension.load.uri}}?okStatusCodeRange=200-399" />
         </when>
       </choice>
     </route>
